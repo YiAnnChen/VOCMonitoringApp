@@ -1,9 +1,11 @@
 import React, { useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, Pressable, SafeAreaView } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, Pressable, SafeAreaView, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
+  const { t, i18n } = useTranslation();
 
   // 動畫效果封裝元件
   const AnimatedCard = ({ onPress, imageSource, label }: { onPress: () => void, imageSource: any, label: string }) => {
@@ -77,24 +79,35 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>NCKU ENV</Text>
+        <Text style={styles.title}>{t('title')}</Text>
+        <TouchableOpacity
+          onPress={ () =>{
+            const newLang = i18n.language === 'en' ? 'zh' : 'en';
+            i18n .changeLanguage(newLang);
+          }}
+          style={{position:'absolute',right:20}}
+        >
+        <Text style={{ fontSize: 20, fontWeight: 'bold' ,paddingHorizontal:6}}>
+        {i18n.language === 'en' ? '中' : 'EN'}
+        </Text> 
+        </TouchableOpacity>
       </View>
 
       <View style={styles.menuContainer}>
         <AnimatedCard
           onPress={() => navigation.navigate('Profile')}
           imageSource={require('/Users/chenyian/VOCMonitoringApp/assets/info.png')}
-          label="基本資料輸入"
+          label={t('basicInfo')} 
         />
         <AnimatedCard2
           onPress={() => navigation.navigate('HealthData')}
           imageSource={require('/Users/chenyian/VOCMonitoringApp/assets/health.png')}
-          label="健康即時資料"
+          label={t('realTime')}
         />
         <AnimatedCard
           onPress={() => navigation.navigate('VOCData')}
           imageSource={require('/Users/chenyian/VOCMonitoringApp/assets/sensor.png')}
-          label="感測器接收資料"
+          label={t('sensor')}
         />
       </View>
     </SafeAreaView>
@@ -112,6 +125,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 0.5,
     borderColor: '#ccc',
+    position: 'relative',
   },
   title: {
     fontSize: 22,
