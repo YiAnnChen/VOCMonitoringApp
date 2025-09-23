@@ -247,6 +247,8 @@ export default function HealthDataScreen(){
               .filter(([key]) => key !== 'severity')
               .map(([key, value]) => {
                 const v = value as { checked: boolean; note: string };
+                const isOther = key ==='otherSevere';
+
                 return(
                 <View key={key} style={{ marginBottom: 12 }}>
                   <View style={styles.checkboxContainer}>
@@ -259,7 +261,7 @@ export default function HealthDataScreen(){
                     <Text style={styles.label}>{t(key)}</Text>
                   </View>
 
-                  {v.checked && (
+                  {isOther && v.checked && (
                     <TextInput
                       style={styles.input}
                       placeholder={t('daily_detail')}
@@ -267,8 +269,8 @@ export default function HealthDataScreen(){
                       onChangeText={(text) =>
                         setExistingConditions(prev => ({
                           ...prev,
-                          [key as keyof typeof existingConditions]: {
-                            ...prev,
+                          [key]: {
+                            ...(prev[key as keyof typeof existingConditions] as any),
                             note: text,
                           },
                         }))
@@ -301,7 +303,9 @@ export default function HealthDataScreen(){
               .map(([key, value]) => {
                 const v = typeof value === 'object' && value !== null
                 ? value as { checked: boolean; note?: string }
-                : { checked: value };
+                : { checked: value as boolean};
+                const isOther = key === 'other';
+
                 return(
                 <View key={key} style={{ marginBottom: 12 }}>
                   <View style={styles.checkboxContainer}>
@@ -314,7 +318,7 @@ export default function HealthDataScreen(){
                     <Text style={styles.label}>{t(key)}</Text>
                   </View>
 
-                  {v.checked && (
+                  {isOther && v.checked && (
                     <TextInput
                       style={styles.input}
                       placeholder={t('daily_detail')}
@@ -322,8 +326,8 @@ export default function HealthDataScreen(){
                       onChangeText={(text) =>
                         setChronicMeds(prev => ({
                           ...prev,
-                          [key as keyof typeof chronicMeds]: {
-                            ...prev,
+                          [key]: {
+                            ...(prev[key as keyof typeof chronicMeds] as any),
                             note: text,
                           },
                         }))
@@ -356,7 +360,8 @@ export default function HealthDataScreen(){
               .map(([key, value]) => {
                 const v = typeof value === 'object' && value !== null
                 ? value as { checked: boolean; note?: string }
-                : { checked: value };
+                : { checked: value as boolean};
+                const isOther = key === 'other';
                 return(
                 <View key={key} style={{ marginBottom: 12 }}>
                   <View style={styles.checkboxContainer}>
@@ -369,7 +374,7 @@ export default function HealthDataScreen(){
                     <Text style={styles.label}>{t(key)}</Text>
                   </View>
 
-                  {v.checked && (
+                  {isOther && v.checked && (
                     <TextInput
                       style={styles.input}
                       placeholder="Enter detail"
@@ -377,8 +382,8 @@ export default function HealthDataScreen(){
                       onChangeText={(text) =>
                         setCovidInfection(prev => ({
                           ...prev,
-                          [key as keyof typeof covidInfection]: {
-                            ...prev,
+                          [key]: {
+                            ...(prev[key as keyof typeof covidInfection] as any),
                             note: text,
                           },
                         }))
@@ -411,7 +416,9 @@ export default function HealthDataScreen(){
               .map(([key, value]) => {
                 const v = typeof value === 'object' && value !== null
                 ? value as { checked: boolean; note?: string }
-                : { checked: value };
+                : { checked: value as boolean};
+                const isOther = key === 'other';
+
                 return(
                 <View key={key} style={{ marginBottom: 12 }}>
                   <View style={styles.checkboxContainer}>
@@ -424,7 +431,7 @@ export default function HealthDataScreen(){
                     <Text style={styles.label}>{t(key)}</Text>
                   </View>
 
-                  {v.checked && (
+                  {isOther && v.checked && (
                     <TextInput
                       style={styles.input}
                       placeholder={t('daily_detail')}
@@ -433,7 +440,7 @@ export default function HealthDataScreen(){
                         setFluHistory(prev => ({
                           ...prev,
                           [key]: {
-                            ...((prev[key] as any) ?? {}),
+                            ...(prev[key as keyof typeof fluHistory] as any),
                             note: text,
                           },
                         }))

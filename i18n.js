@@ -101,8 +101,19 @@ const resources = {
       unconscious: "Unconscious",
       allergy: "Allergy",
       anosmia: "Anosmia",
-      other: "Other"
-
+      other: "Other",
+      //VOCdata
+      voc:{
+        header: "VOCData",
+        title: "Concentration vs. Time",
+        ranges: {
+          "15m" : "15 mins",
+          "30m" : "30 mins",
+          "1h" : "1 hour",
+          "1_5h" : "1.5 hours",
+          "2h" : "2 hours"
+        }
+      }
     }
   },
   zh: {
@@ -202,7 +213,19 @@ const resources = {
       unconscious: "意識不清",
       allergy: "過敏反應",
       anosmia: "嗅覺喪失",
-      other: "其他"
+      other: "其他",
+
+      voc:{
+        header: "VOC資料",
+        title: "濃度與時間",
+        ranges:{
+          "15m": "15分鐘",
+          "30m": "30分鐘",
+          "1h" : "1小時",
+          "1_5h" : "1.5小時",
+          "2h" : "2小時"
+        }
+      }
     }
   }
 };
