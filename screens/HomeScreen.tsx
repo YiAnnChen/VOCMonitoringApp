@@ -1,11 +1,27 @@
 import React, { useRef } from 'react';
-import { View, Text, Image, StyleSheet, Animated, Pressable, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, Image, StyleSheet, Animated, Pressable, SafeAreaView, TouchableOpacity,Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
+import { supabase } from '../lib/supabaseClient';
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const { t, i18n } = useTranslation();
+
+  const handleLogout = () => {
+    Alert.alert(
+      t('logout_qus.title'),
+      t('logout_qus.message'),
+      [
+        {text:t('logout_qus.cancel'), style:'cancel'},
+        {text:t('logout_qus.confirm'), style:'destructive', onPress:async() => {
+          const { error } = await supabase.auth.signOut();
+          if(error) Alert.alert(t('logout_qus.failedTitle'),error.message);
+          },
+        },
+      ]
+    );
+  };
 
   // 動畫效果封裝元件
   const AnimatedCard = ({ onPress, imageSource, label }: { onPress: () => void, imageSource: any, label: string }) => {
@@ -79,6 +95,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <TouchableOpacity
+          onPress={handleLogout}
+          style={{position: 'absolute',left:20}}>
+            <Text style={{ fontSize:16 ,fontWeight: 'bold'}}>{t('logout')}</Text>
+        </TouchableOpacity>
         <Text style={styles.title}>{t('title')}</Text>
         <TouchableOpacity
           onPress={ () =>{

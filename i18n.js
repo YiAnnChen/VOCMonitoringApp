@@ -10,6 +10,7 @@ const resources = {
       basicInfo: "Basic Information Input",
       realTime: "Real-Time Health Data",
       sensor: "Sensor Data Reception",
+      logout:"Log out",
     //profile screen
       ediProfile:"Edit Profile",
       name:"Name",
@@ -20,8 +21,8 @@ const resources = {
       genderPlaceholder:"Enter your gender",
       email: "Email",
       emailPlaceholder: "Enter your email",
-      height: "Height (cm)",
-      weight: "Weight (kg)",
+      height: "Height",
+      weight: "Weight",
       weightPlaceholder: "eg. 80(Kg)",
       symptomHint: "Please indicate if you have any of the following symptoms by checking the appropriate boxes.",
       glasses: "Wears Glasses",
@@ -113,6 +114,27 @@ const resources = {
           "1_5h" : "1.5 hours",
           "2h" : "2 hours"
         }
+      },
+      //auth
+      auth: {
+        navTitle: "Auth",
+        title: "Login / Register",
+        emailPlaceholder: "Email",
+        passwordPlaceholder: "Password",
+        login: "Login",
+        register: "Register",
+        loginSuccess: "Login successful!",
+        loginFailedTitle: "Login failed :(",
+        registerSuccess: "Registration successful! Please verify in your mailbox.",
+        registerFailedTitle: "Registration failed :("
+      },
+      //logout
+      logout_qus: {
+        title: "Logout",
+        message: "Are you sure you want to logout?",
+        cancel: "Cancel",
+        confirm: "Logout",
+        failedTitle: "Logout failed"
       }
     }
   },
@@ -123,6 +145,7 @@ const resources = {
       basicInfo: "基本資料輸入",
       realTime: "即時健康資料",
       sensor: "感測器資料接收",
+      logout:"登出",
       //profilescreen
       editProfile: "編輯個人資料",
       name: "姓名",
@@ -225,6 +248,27 @@ const resources = {
           "1_5h" : "1.5小時",
           "2h" : "2小時"
         }
+      },
+      //auth
+      auth: {
+        navTitle: "登入頁面",
+        title: "登入 / 註冊",
+        emailPlaceholder: "電子郵件",
+        passwordPlaceholder: "密碼",
+        login: "登入",
+        register: "註冊",
+        loginSuccess: "登入成功！",
+        loginFailedTitle: "登入失敗：(",
+        registerSuccess: "註冊成功！請至信箱完成驗證。",
+        registerFailedTitle: "註冊失敗：("
+      },
+      //logout
+      logout_qus: {
+        title: "登出",
+        message: "確定要登出嗎？",
+        cancel: "取消",
+        confirm: "登出",
+        failedTitle: "登出失敗"
       }
     }
   }
