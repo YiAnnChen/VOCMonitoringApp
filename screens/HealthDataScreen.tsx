@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 
 export default function HealthDataScreen(){
     const { t } = useTranslation();
-    const [weight, setWeight] = useState(' ');
-    const [bloodPressure, setBloodPressure] = useState(' ');
-    const [heartRate, setHeartRate] = useState(' ');
+    const [weight, setWeight] = useState('');
+    const [bloodPressure, setBloodPressure] = useState('');
+    const [heartRate, setHeartRate] = useState('');
     const [newSymptoms, setNewSymptoms] = useState({
       cough: false,
       sneeze: false,
@@ -120,45 +120,73 @@ export default function HealthDataScreen(){
       }));
     };
     
+    const toFloatOrNull = (s: string) => {
+      const v = s.trim();
+      if(!v) return null;
+      const n = Number.parseFloat(v);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    const toIntOrNull = (s:string) => {
+      const v = s.trim();
+      if(!v) return null;
+      const n = Number.parseInt(v,10);
+      return Number.isFinite(n) ? n : null;
+    };
     
-
     const handleSubmit = async () => {
-        const { error } = await supabase.from('health_data').insert([
-          {
-            weight: parseFloat(weight),
-            blood_pressure: bloodPressure,
-            heart_rate: parseInt(heartRate),
-            realtime_health_info: newSymptoms,
-            medical_history: medicalHistory,
-            existing_conditions: existingConditions,
-            chronic_meds: chronicMeds,
-            covid_infection: covidInfection,
-            flu_history: fluHistory,
-          },
-        ]);
+      //1.取得登入者
+      const {data:userRes,error: useErr } = await supabase.auth.getUser();
+      const user = userRes?.user;
 
-        
+      if(useErr || !user){
+        Alert.alert('Please login first');
+        return;
+      }
+      //2. 寫入時必帶user_id(RLS才會放行)
+      const payload = {
+        user_id : user.id,
+        recorded_at: new Date().toISOString(),
+
+        weight: weight.trim() ? Number(weight) : null,
+        blood_pressure: bloodPressure.trim() ? bloodPressure : null,
+        heart_rate: heartRate.trim() ? Number(heartRate) : null,
+
+        realtime_health_info: newSymptoms,
+        medical_history: medicalHistory,
+        existing_conditions: existingConditions,
+        chronic_meds: chronicMeds,
+        covid_infection: covidInfection,
+        flu_history: fluHistory,
+      };
+
+      const { error } = await supabase.from('health_data').insert([payload]);
     
         if (error) {
           Alert.alert(t('daily_saveFailed'), error.message);
-        } else {
-          Alert.alert(t('daily_saved'));
-          setWeight('');
-          setBloodPressure('');
-          setHeartRate('');
-          setNewSymptoms({
-            cough: false,
-            sneeze: false,
-            soreThroat: false,
-            runnyNose: false,
-            skinRash: false,
-            itchyEyes: false,
-            fever: false,
-            chestTightness: false,
-            severity: 'none',
+          return;
+        } 
+        
+        Alert.alert(t('daily_saved'));
+
+        //3. reset表單
+        setWeight('');
+        setBloodPressure('');
+        setHeartRate('');
+
+        setNewSymptoms({
+          cough: false,
+          sneeze: false,
+          soreThroat: false,
+          runnyNose: false,
+          skinRash: false,
+          itchyEyes: false,
+          fever: false,
+          chestTightness: false,
+          severity: 'none',
           });
-        }
       };
+    
 
       
       

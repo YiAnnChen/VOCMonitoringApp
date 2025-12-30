@@ -1,8 +1,22 @@
-import React,{useState} from 'react';
+import React,{useEffect,useState} from 'react';
 import {View,Text,TextInput,Button,StyleSheet,Alert,ScrollView,Switch} from 'react-native';
 import { supabase } from '../lib/supabaseClient';
 import { TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
+
+const toInt = (s:string) => {
+  const v = s.trim();
+  if(!v) return null;
+  const n = Number.parseInt(v,10);
+  return Number.isFinite(n) ? n : null;
+};
+
+const toFloat = (s:string) => {
+  const v = s.trim();
+  if(!v) return null;
+  const n = Number.parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+};
 
 export default function ProfileScreen(){
     const { t } = useTranslation();
@@ -26,38 +40,110 @@ export default function ProfileScreen(){
     const [chronicDisease, setChronicDisease] = useState('');
     const [vaccination, setVaccination] = useState('');
 
-    const handleSave = async () => {
-        const { data, error } = await supabase.from('profiles').insert([
-        {
-            name,
-            age: parseInt(age),
-            gender,
-            email,
-            height: parseInt(height),
-            weight: parseInt(weight),
-            glasses,
-            disabled,
-            color_blind: colorBlind,
-            smoking,
-            diastolic: parseInt(diastolic),
-            systolic: parseInt(systolic),
-            pulse: parseInt(pulse),
-            blood_sugar: parseFloat(bloodSugar),
-            exercise_type: exerciseType,
-            exercise_time: parseFloat(exerciseTime),
-            chronic_disease: chronicDisease,
-            vaccination,
-        },
-        ]);
+    //進頁面抓user+讀取profile回填
+    useEffect(() => {
+      const load = async() => {
+        const {data: userRes ,error: userErr } = await supabase.auth.getUser();
+        const user = userRes?.user;
 
-        if (error) {
-            Alert.alert(t('saveFailed'), error.message);
-        } else {
-            Alert.alert(t('saved'));
+        if(userErr || !user){
+          Alert.alert('Please login first');
+          return;
         }
-    };
 
-    return(
+        //email 直接用auth的email
+        setEmail(user.email ?? '');
+
+        const{data:profile,error} = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id',user.id)
+          .maybeSingle();
+
+        //沒資料是正常的，代表這個user還沒填過profile
+        if(error){
+          Alert.alert('Load profile failed',error.message);
+          return;
+        }
+
+        if(profile){
+          setName(profile.name ?? '');
+          setGender(profile.gender ?? '');
+          setAge(profile.age != null ? String(profile.age) : '');
+          setHeight(profile.height != null ? String(profile.height) : '');
+          setWeight(profile.weight != null ? String(profile.weight) : '');
+
+          setGlasses(!!profile.glasses);
+          setDisabled(!!profile.disabled);
+          setColorBlind(!!profile.color_blind);
+          setSmoking(!!profile.smoking);
+
+          setDiastolic(profile.diastolic != null ? String(profile.diastolic) : '');
+          setSystolic(profile.systolic != null ? String(profile.systolic) : '');
+          setPulse(profile.pulse != null ? String(profile.pulse) : '');
+          setBloodSugar(profile.blood_sugar != null ? String(profile.blood_sugar) : '');
+
+          setExerciseType(profile.exercise_type ?? '');
+          setExerciseTime(profile.exercise_time != null ? String(profile.exercise_time) : '');
+          setChronicDisease(profile.chronic_disease ?? '');
+          setVaccination(profile.vaccination ?? '');
+        }
+      };
+
+      load();
+    },[]);
+
+    const handleSave = async () => {
+        const { data: userRes , error: useErr } = await supabase.auth.getUser();
+        const user = userRes?.user;
+
+        if (useErr || !user) {
+            Alert.alert('Please login first!');
+            return;
+        }   
+    
+
+      //id = user.id 用upsert避免重複新增
+      const payload = {
+        id: user.id,
+        email: user.email ?? null,
+        name: name || null,
+        gender: gender || null,
+
+        age: toInt(age),
+        height: toInt(height),
+        weight: toInt(weight),
+
+        glasses,
+        disabled,
+        color_blind: colorBlind,
+        smoking,
+
+        diastolic: toInt(diastolic),
+        systolic: toInt(systolic),
+        pulse: toInt(pulse),
+        blood_sugar: toFloat(bloodSugar),
+
+        exercise_type: exerciseType || null,
+        exercise_time: toFloat(exerciseTime),
+        chronic_disease: chronicDisease || null,
+        vaccination: vaccination || null,
+
+        updated_at: new Date().toISOString(),
+      };
+
+    const {error} = await supabase
+      .from('profiles')
+      .upsert(payload,{onConflict: 'id'});
+
+    if (error){
+      Alert.alert(t('saveFailed'),error.message);
+    }else{
+      Alert.alert(t('saved'));
+    }
+  };
+
+  return(
     <ScrollView style={styles.container}>
       <Text style={styles.title}>{t('editProfile')}</Text>
 
@@ -71,7 +157,7 @@ export default function ProfileScreen(){
       <TextInput style={styles.input} value={gender} onChangeText={setGender} placeholder={t('genderPlaceholder')} />
 
       <Text>{t('email')}</Text>
-      <TextInput style={styles.input} value={email} onChangeText={setEmail} placeholder={t('emailPlaceholder')} keyboardType='email-address' />
+      <TextInput style={styles.input} value={email} editable={false} placeholder={t('emailPlaceholder')} keyboardType='email-address' />
 
       <Text>{t('height')} (cm)</Text>
       <TextInput style={styles.input} value={height} onChangeText={setHeight} keyboardType='numeric' />

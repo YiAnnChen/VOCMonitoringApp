@@ -1,10 +1,13 @@
 import 'react-native-url-polyfill/auto';
-import React from 'react';
+import React ,{useEffect,useState}from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import i18n from './i18n';
+import { Session } from '@supabase/supabase-js';
+import { supabase } from './lib/supabaseClient';
 
+import AuthScreen from './screens/AuthScreen';
 import HomeScreen from './screens/HomeScreen';
 import VOCDataScreen from './screens/VOCDataScreen';
 import HistoryGraphScreen from './screens/HistoryGraphScreen';
@@ -32,18 +35,31 @@ function LanguageToggle(){
 }
 
 export default function App() {
+  const [session,setSession] = useState<Session | null>(null);
+  console.log('supabase ready?', !!supabase)
+  useEffect(() => {
+    supabase.auth.getSession().then(({data}) => setSession(data.session));
+    const {data: listener } = supabase.auth.onAuthStateChange((_event,session) => {setSession(session);});
+    return() => listener.subscription.unsubscribe();
+  },[]);
+
   return (
     <I18nextProvider i18n={i18n}>
       <NavigationContainer>
         <Stack.Navigator 
-          initialRouteName="Home"
-          screenOptions={{headerRight: ()=> <LanguageToggle /> }}>
-          <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
-          <Stack.Screen name="HealthData" component={HealthDataScreen} />
-          <Stack.Screen name="VOCData" component={VOCDataScreen} />
-          <Stack.Screen name="HistoryGraph" component={HistoryGraphScreen} />
-          <Stack.Screen name="LegalLimits" component={LegalLimitsScreen} />
+          screenOptions={{headerRight: ()=> <LanguageToggle /> , headerShown:true}}>
+            {session?.user ?(
+              <>
+                <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="Profile" component={ProfileScreen} />
+                <Stack.Screen name="HealthData" component={HealthDataScreen} />
+                <Stack.Screen name="VOCData" component={VOCDataScreen} />
+                <Stack.Screen name="HistoryGraph" component={HistoryGraphScreen} />
+                <Stack.Screen name="LegalLimits" component={LegalLimitsScreen} />
+              </>
+            ):(
+              <Stack.Screen name="Auth" component={AuthScreen} />
+            )}
         </Stack.Navigator>
       </NavigationContainer>
     </I18nextProvider>

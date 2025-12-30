@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, StyleSheet } from 'react-native';
 import { supabase } from '../lib/supabaseClient';
-import { ContinousBaseGesture } from 'react-native-gesture-handler/lib/typescript/handlers/gestures/gesture';
 
 export default function AuthScreen({navigation}:any){
     const [email,setEmail] = useState('');
@@ -11,26 +10,21 @@ export default function AuthScreen({navigation}:any){
         const{error} = await supabase.auth.signInWithPassword({email,password});
         if(error){
             Alert.alert("Login failed:(",error.message);
-        }else{
-            Alert.alert("Login successful!");
-            navigation.replace('Home');
+            return;
         }
+
+        Alert.alert("Login successful!");
+            
+        
     };
 
     const signUp = async () => {
-        const { data: signUpData, error } = await supabase.auth.signUp({ email, password });
+        const { error } = await supabase.auth.signUp({ email, password });
 
-        if (!error && signUpData.user) {
-            await supabase.from('profiles').insert({
-                id: signUpData.user.id,
-                email,
-                name: '',
-            });
-            Alert.alert("Registration successful! Please verify in your mailbox.");
-            }
         if(error){
             Alert.alert("Registration failed:(",error.message);
         }
+        else{Alert.alert("Registeration successful! Please verify in your mailbox.");}
     };
 
     return (
