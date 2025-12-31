@@ -34,12 +34,45 @@ export default function AuthScreen({navigation}:any){
     };
 
     const signUp = async () => {
-        const { error } = await supabase.auth.signUp({ email, password });
+      const normalizedEmail = email.trim().toLowerCase();
+      //1.check first
+      const {data: isAvailable, error: checkErr} = await supabase.rpc(
+        'is_email_available',
+        {p_email:normalizedEmail}
+      );
 
-        if(error){
-            Alert.alert(t('auth.registerFailedTitle'),error.message);
-        }
-        else{Alert.alert(t('auth.registerSuccess'));}
+      if(checkErr){
+        Alert.alert(t('auth.registerFailedTitle'),checkErr.message);
+        return;
+      }
+
+      if(!isAvailable){
+        Alert.alert(
+          t('auth.emailAlreadyUsedTitle'),
+          t('auth.emailAlreadyUsedMessage')
+        );
+        return;
+      }
+
+      //2. register again
+      const {data,error} = await supabase.auth.signUp({
+        email:normalizedEmail,
+        password,
+      });
+
+      if(error){
+        Alert.alert(t('auth.registerFailedTitle'),error.message);
+        return;
+      }
+      
+      if(!data?.user){
+        Alert.alert(
+          t('auth.registerFailedTitle'),
+          t('auth.emailAlreadyUsedMessage')
+        );
+        return;
+      }
+      Alert.alert(t('auth.registerSuccess'));
     };
 
     return (

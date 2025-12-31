@@ -103,6 +103,10 @@ const resources = {
       allergy: "Allergy",
       anosmia: "Anosmia",
       other: "Other",
+
+      asymptomatic: "Asymptomatic",
+      noCondition: "No major medical history",
+      noUse: "No medication",
       //VOCdata
       voc:{
         header: "VOCData",
@@ -120,6 +124,8 @@ const resources = {
         navTitle: "Auth",
         title: "Login / Register",
         emailPlaceholder: "Email",
+        emailAlreadyUsedTitle: "Registration failed",
+        emailAlreadyUsedMessage: "This email is already registered.\nPlease use a different email.",
         passwordPlaceholder: "Password",
         login: "Login",
         register: "Register",
@@ -135,7 +141,7 @@ const resources = {
         cancel: "Cancel",
         confirm: "Logout",
         failedTitle: "Logout failed"
-      }
+      },
     }
   },
   zh: {
@@ -238,6 +244,10 @@ const resources = {
       anosmia: "嗅覺喪失",
       other: "其他",
 
+      asymptomatic: "無症狀",
+      noCondition: "無舊疾／重大病史",
+      noUse: "無使用",
+
       voc:{
         header: "VOC資料",
         title: "濃度與時間",
@@ -254,6 +264,8 @@ const resources = {
         navTitle: "登入頁面",
         title: "登入 / 註冊",
         emailPlaceholder: "電子郵件",
+        emailAlreadyUsedTitle: "註冊失敗",
+        emailAlreadyUsedMessage: "此Email已被註冊過，請更換其他的Email",
         passwordPlaceholder: "密碼",
         login: "登入",
         register: "註冊",

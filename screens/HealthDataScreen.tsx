@@ -8,7 +8,9 @@ export default function HealthDataScreen(){
     const [weight, setWeight] = useState('');
     const [bloodPressure, setBloodPressure] = useState('');
     const [heartRate, setHeartRate] = useState('');
+
     const [newSymptoms, setNewSymptoms] = useState({
+      asymptomatic: false,
       cough: false,
       sneeze: false,
       soreThroat: false,
@@ -19,8 +21,29 @@ export default function HealthDataScreen(){
       chestTightness: false,
       severity: 'none',
     });
+    type NewSymptomKey = Exclude<keyof typeof newSymptoms, 'severity'>;
+    const toggleNewSymptoms = (key: NewSymptomKey) => {
+      setNewSymptoms(prev => {
+        //勾選無症狀的話，會清空其他症狀，severity回到none
+        if (key === 'asymptomatic'){
+          const turningOn = !prev.asymptomatic;
+          const next: any = {...prev,asymptomatic:turningOn};
+          if(turningOn){
+            Object.keys(prev).forEach(k => {
+              if (k !== 'severity' && k !== 'asymptomatic') next[k] = false;
+            });
+            next.severity = 'none';
+          }
+          return next;
+        }
+        //勾選其他症狀，自動取消無症狀
+        return {...prev,asymptomatic:false,[key]:!prev[key]};
+      });
+    };
+
 
     const [medicalHistory, setMedicalHistory] = useState({
+      asymptomatic: false,
       cough: false,
       sneeze: false,
       soreThroat: false,
@@ -32,51 +55,96 @@ export default function HealthDataScreen(){
       eyePain: false,
       severity: 'none', // none, recovered, underTreatment
     });
-
-    const toggleMedicalHistory = (key: keyof typeof medicalHistory) => {
-      setMedicalHistory(prev => ({ ...prev, [key]: !prev[key] }));
+    type MedicalHistoryKey = Exclude<keyof typeof medicalHistory, 'severity'>;
+    const toggleMedicalHistory = (key: MedicalHistoryKey) => {
+      setMedicalHistory(prev => {
+        if (key === 'asymptomatic') {
+          const turningOn = !prev.asymptomatic;
+          const next: any = { ...prev, asymptomatic: turningOn };
+          if (turningOn) {
+            Object.keys(prev).forEach(k => {
+              if (k !== 'severity' && k !== 'asymptomatic') next[k] = false;
+            });
+            next.severity = 'none';
+          }
+          return next;
+        }
+        return { ...prev, asymptomatic: false, [key]: !prev[key] };
+      });
     };
 
     const [existingConditions, setExistingConditions] = useState({
+      noCondition : { checked : false, note:''},
       stroke: { checked: false, note: '' },
       cancer: { checked: false, note: '' },
       otherSevere: { checked: false, note: '' },
       severity: 'none', // none, recovered, underTreatment
     });
+    type ExistingConditionKey = Exclude<keyof typeof existingConditions, 'severity'>;
+    const toggleExistingCondition = (key: ExistingConditionKey) => {
+      setExistingConditions(prev => {
+        if (key === 'noCondition'){
+          const turningOn = !prev.noCondition.checked;
+          const next: any = {
+            ...prev,
+            noCondition: { ...prev.noCondition, checked: turningOn,note:''},
+          };
 
-    const toggleExistingCondition = (key: keyof typeof existingConditions) => {
-      if (key === 'severity') return;
-      setExistingConditions(prev => ({
-        ...prev,
-        [key]: {
-          ...prev[key],
-          checked: !prev[key].checked,
-        },
-      }));
+          if(turningOn){
+            Object.keys(prev).forEach(k => {
+              if(k === 'severity' || k === 'noCondition')return;
+              const v: any = prev[k as keyof typeof prev];
+              next[k] = {...v, checked: false, note:''};
+            });
+            next.severity = 'none';
+          }
+          return next;
+        }
+        const cur: any = prev[key];
+        const turningOn = !cur.checked;
+        return {
+          ...prev,
+          noCondition:{ ...prev.noCondition,checked:false},
+          [key] : {...cur,checked: turningOn},
+        };
+      });
     };
 
     const [chronicMeds, setChronicMeds] = useState({
+      noUse: false,
       hypertension: false,
       diabetes: false,
       hyperlipidemia: false,
       other: { checked: false, note: '' },
       usage: 'none', // none, used, using
     });
-
-    const togglechronicMeds = (key: keyof typeof chronicMeds) => {
-      if (key === 'usage') return;
-      setChronicMeds(prev => ({
-        ...prev,
-        [key]: typeof prev[key] === 'object' && prev[key] !== null
-          ? {
-              ...prev[key],
-              checked: !prev[key].checked,
-            }
-          : !prev[key],
-      }));
+    type ChronicMedsKey = Exclude<keyof typeof chronicMeds, 'usage'>;
+    const togglechronicMeds = (key: ChronicMedsKey) => {
+      setChronicMeds(prev => {
+        if(key === 'noUse'){
+          const turningOn = !prev.noUse;
+          const next: any = { ...prev,noUse:turningOn};
+          if(turningOn){
+            Object.keys(prev).forEach(k => {
+              if(k === 'usage' || k === 'noUse')return;
+              const v:any = prev[k as keyof typeof prev];
+              if(v && typeof v === 'object') next[k] = {...v, checked:false,note:''};
+              else next[k] = false;
+            });
+            next.usage = 'none';
+          }
+          return next;
+        }
+        const v:any = prev[key];
+        if(v && typeof v === 'object'){
+          return{ ...prev,noUse:false,[key]:{...v, checked: !v.checked}};
+        }
+        return {...prev,noUse:false,[key]:!prev[key]};
+      });
     };
 
     const [covidInfection, setCovidInfection] = useState({
+      asymptomatic: false,
       diagnosed: { checked: false, note: '' },
       respiratory: false,
       unconscious: false,
@@ -86,38 +154,72 @@ export default function HealthDataScreen(){
       other: { checked: false, note: '' },
       usage: 'none', // none, used
     });
+    type CovidInfectionKey = Exclude<keyof typeof covidInfection,'usage'>
+    const togglecovidInfection = (key: CovidInfectionKey) => {
+      const symptomKeys = ['diagnosed','respiratory','unconscious','headache','allergy','anosmia'] as const;
 
-    const togglecovidInfection = (key: keyof typeof covidInfection) => {
-      if (key === 'usage') return;
-      setCovidInfection(prev => ({
-        ...prev,
-        [key]: typeof prev[key] === 'object' && prev[key] !== null
-          ? {
-              ...prev[key],
-              checked: !prev[key].checked,
-            }
-          : !prev[key],
-      }));
+      setCovidInfection(prev => {
+        if (key === 'asymptomatic'){
+          const turningOn = !prev.asymptomatic;
+          const next:any = { ...prev, asymptomatic: turningOn};
+          if(turningOn){
+            symptomKeys.forEach(k => (next[k] = false));
+            next.other = {...prev.other, checked:false,note:''};
+          }
+          return next;
+        }
+        if(symptomKeys.includes(key as any)){
+          return {...prev,asymptomatic:false,[key]:!prev[key]};
+        }
+        if(key === 'other'){
+          const turningOn = !prev.other.checked;
+          return{
+            ...prev,
+            asymptomatic:turningOn ? false:prev.asymptomatic,
+            other:{...prev.other, checked: turningOn},
+          };
+        }
+        if(key === 'diagnosed'){
+          return { ...prev, diagnosed:{...prev.diagnosed, checked: !prev.diagnosed.checked}};
+        }
+        return prev;
+      });
     };
 
     const [fluHistory, setFluHistory] = useState({
+      asymptomatic:false,
       respiratory: false,
       headache: false,
       other: { checked: false, note: '' },
       usage: 'none', // none, used
     });
+    type FluHistoryKey = Exclude<keyof typeof fluHistory,'usage'>;
+    const togglefluHistory = (key: FluHistoryKey) => {
+      const symptomKeys = ['respiratory','headache'] as const;
 
-    const togglefluHistory = (key: keyof typeof fluHistory) => {
-      if (key === 'usage') return;
-      setFluHistory(prev => ({
-        ...prev,
-        [key]: typeof prev[key] === 'object' && prev[key] !== null
-          ? {
-              ...prev[key],
-              checked: !prev[key].checked,
-            }
-          : !prev[key],
-      }));
+      setFluHistory(prev => {
+        if (key === 'asymptomatic'){
+          const turningOn = !prev.asymptomatic;
+          const next:any = { ...prev, asymptomatic: turningOn};
+          if(turningOn){
+            symptomKeys.forEach(k => (next[k] = false));
+            next.other = {...prev.other, checked:false,note:''};
+          }
+          return next;
+        }
+        if(symptomKeys.includes(key as any)){
+          return {...prev,asymptomatic:false,[key]:!prev[key]};
+        }
+        if(key === 'other'){
+          const turningOn = !prev.other.checked;
+          return{
+            ...prev,
+            asymptomatic:turningOn ? false:prev.asymptomatic,
+            other:{...prev.other, checked: turningOn},
+          };
+        }
+        return prev;
+      });
     };
     
     const toFloatOrNull = (s: string) => {
@@ -175,6 +277,7 @@ export default function HealthDataScreen(){
         setHeartRate('');
 
         setNewSymptoms({
+          asymptomatic:false,
           cough: false,
           sneeze: false,
           soreThroat: false,
@@ -185,6 +288,58 @@ export default function HealthDataScreen(){
           chestTightness: false,
           severity: 'none',
           });
+        
+        setMedicalHistory({
+            asymptomatic: false,
+            cough: false,
+            sneeze: false,
+            soreThroat: false,
+            runnyNose: false,
+            skinRash: false,
+            itchyEyes: false,
+            fever: false,
+            headache: false,
+            eyePain: false,
+            severity: 'none',
+        });
+        
+        setExistingConditions({
+            noCondition: { checked: false, note: '' },
+            stroke: { checked: false, note: '' },
+            cancer: { checked: false, note: '' },
+            otherSevere: { checked: false, note: '' },
+            severity: 'none',
+        });
+      
+        setChronicMeds({
+            noUse: false,
+            hypertension: false,
+            diabetes: false,
+            hyperlipidemia: false,
+            other: { checked: false, note: '' },
+            usage: 'none',
+        });
+
+        setCovidInfection({
+          asymptomatic: false,
+          diagnosed: { checked: false, note: '' },
+          respiratory: false,
+          unconscious: false,
+          headache: false,
+          allergy: false,
+          anosmia: false,
+          other: { checked: false, note: '' },
+          usage: 'none',
+        });
+
+        setFluHistory({
+          asymptomatic: false,
+          respiratory: false,
+          headache: false,
+          other: { checked: false, note: '' },
+          usage: 'none',
+        });
+        
       };
     
 
@@ -212,7 +367,7 @@ export default function HealthDataScreen(){
             <View key={key} style={styles.checkboxContainer}>
               <TouchableOpacity
                 style={[styles.checkboxBase, value && styles.checkboxChecked]}
-                onPress={() => setNewSymptoms(prev => ({ ...prev, [key as keyof typeof newSymptoms]: !prev[key as keyof typeof newSymptoms] }))}
+                onPress={() => toggleNewSymptoms(key as NewSymptomKey)}
               >{value && <Text style={styles.checkmark}>✓</Text>}
               </TouchableOpacity>
               <Text style={styles.label}>{t(key)}</Text>
@@ -244,7 +399,7 @@ export default function HealthDataScreen(){
                   <TouchableOpacity
                     style={[styles.checkboxBase, value && styles.checkboxChecked]}
                     onPress={() =>
-                      toggleMedicalHistory(key as keyof typeof medicalHistory)
+                      toggleMedicalHistory(key as MedicalHistoryKey)
                     }
                   >
                     {value && <Text style={styles.checkmark}>✓</Text>}
@@ -282,7 +437,7 @@ export default function HealthDataScreen(){
                   <View style={styles.checkboxContainer}>
                     <TouchableOpacity
                       style={[styles.checkboxBase, v.checked && styles.checkboxChecked]}
-                      onPress={() => toggleExistingCondition(key as keyof typeof existingConditions)}
+                      onPress={() => toggleExistingCondition(key as ExistingConditionKey)}
                     >
                       {v.checked && <Text style={styles.checkmark}>✓</Text>}
                     </TouchableOpacity>
@@ -339,7 +494,7 @@ export default function HealthDataScreen(){
                   <View style={styles.checkboxContainer}>
                     <TouchableOpacity
                       style={[styles.checkboxBase, v.checked && styles.checkboxChecked]}
-                      onPress={() => togglechronicMeds(key as keyof typeof chronicMeds)}
+                      onPress={() => togglechronicMeds(key as ChronicMedsKey)}
                     >
                       {v.checked && <Text style={styles.checkmark}>✓</Text>}
                     </TouchableOpacity>
@@ -395,7 +550,7 @@ export default function HealthDataScreen(){
                   <View style={styles.checkboxContainer}>
                     <TouchableOpacity
                       style={[styles.checkboxBase, v.checked && styles.checkboxChecked]}
-                      onPress={() => togglecovidInfection(key as keyof typeof covidInfection)}
+                      onPress={() => togglecovidInfection(key as CovidInfectionKey)}
                     >
                       {v.checked && <Text style={styles.checkmark}>✓</Text>}
                     </TouchableOpacity>
@@ -452,7 +607,7 @@ export default function HealthDataScreen(){
                   <View style={styles.checkboxContainer}>
                     <TouchableOpacity
                       style={[styles.checkboxBase, v.checked && styles.checkboxChecked]}
-                      onPress={() => togglefluHistory(key as keyof typeof fluHistory)}
+                      onPress={() => togglefluHistory(key as FluHistoryKey)}
                     >
                       {v.checked && <Text style={styles.checkmark}>✓</Text>}
                     </TouchableOpacity>
